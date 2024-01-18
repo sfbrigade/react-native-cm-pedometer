@@ -44,7 +44,7 @@
     "url": "git+https://github.com/sfbrigade/react-native-cm-pedometer.git"
   },
   "author": "SF Civic Tech <hello@sfcivictech.org> (https://www.sfcivictech.org/)",
-  "license": "MIT",
+  "license": "LGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/sfbrigade/react-native-cm-pedometer/issues"
   },
