@@ -78,20 +78,24 @@ export interface CMPedometerEvent {
   type: CMPedometerEventType;
 }
 
+export type CMPedometerHandler = (
+  error: Error | undefined,
+  data: CMPedometerData | undefined
+) => void;
+
+export type CMPedometerEventHandler = (
+  error: Error | undefined,
+  pedometerEvent: CMPedometerEvent
+) => void;
+
 const enum CmPedometerEvent {
   onPedometerData = 'onPedometerData',
   onPedometerEvent = 'onPedometerEvent',
 }
 const eventEmitter = new NativeEventEmitter(CmPedometer);
 
-export function startUpdates(
-  from: Date,
-  withHandler: (
-    error: Error | undefined,
-    data: CMPedometerData | undefined
-  ) => void
-): void {
-  eventEmitter.addListener(CmPedometerEvent.onPedometerData, (event: any) => {
+export function startUpdates(from: Date, handler: CMPedometerHandler): void {
+  eventEmitter.addListener(CmPedometerEvent.onPedometerData, (event) => {
     let error: Error | undefined;
     if (event.error) {
       error = new Error(event.error);
@@ -104,7 +108,7 @@ export function startUpdates(
         endDate: new Date(event.data.endDate),
       } as CMPedometerData;
     }
-    withHandler(error, data);
+    handler(error, data);
   });
   CmPedometer.startUpdates(from.toISOString());
 }
@@ -114,10 +118,8 @@ export function stopUpdates(): void {
   CmPedometer.stopUpdates();
 }
 
-export function startEventUpdates(
-  handler: (error: Error | undefined, pedometerEvent: CMPedometerEvent) => void
-): void {
-  eventEmitter.addListener(CmPedometerEvent.onPedometerEvent, (event: any) => {
+export function startEventUpdates(handler: CMPedometerEventHandler): void {
+  eventEmitter.addListener(CmPedometerEvent.onPedometerEvent, (event) => {
     let error: Error | undefined;
     if (event.error) {
       error = new Error(event.error);
@@ -140,3 +142,28 @@ export function stopEventUpdates(): void {
 }
 
 // Fetching Historical Pedometer Data
+
+export function queryPedometerData(
+  from: Date,
+  to: Date
+): Promise<CMPedometerData> {
+  return new Promise((resolve, reject) => {
+    CmPedometer.queryPedometerData(
+      from.toISOString(),
+      to.toISOString(),
+      (error: string | undefined, data: any) => {
+        if (error) {
+          reject(new Error(error));
+        } else if (data) {
+          resolve({
+            ...data,
+            startDate: new Date(data.startDate),
+            endDate: new Date(data.endDate),
+          } as CMPedometerData);
+        } else {
+          reject(new Error('An unexpected error has occurred.'));
+        }
+      }
+    );
+  });
+}

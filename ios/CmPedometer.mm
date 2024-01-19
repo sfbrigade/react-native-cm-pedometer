@@ -38,6 +38,10 @@ RCT_EXTERN_METHOD(stopEventUpdates)
 
 // MARK: - Fetching Historical Pedometer Data
 
+RCT_EXTERN_METHOD(queryPedometerData:(NSString *)from
+                  to:(NSString *)to
+                  withCallback:(RCTResponseSenderBlock)callback)
+
 // MARK: -
 
 + (BOOL)requiresMainQueueSetup

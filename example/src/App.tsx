@@ -17,6 +17,7 @@ import {
   CMPedometerEventType,
   startEventUpdates,
   stopEventUpdates,
+  queryPedometerData,
 } from 'react-native-cm-pedometer';
 
 export default function App() {
@@ -48,13 +49,17 @@ export default function App() {
   const [error, setError] = React.useState<Error | undefined>();
 
   const [isDataStarted, setDataStarted] = React.useState<boolean>(false);
+  const [startDate, setStartDate] = React.useState<Date>(new Date());
   const [data, setData] = React.useState<CMPedometerData | undefined>();
 
   function onPressData() {
+    const now = new Date();
     if (isDataStarted) {
       stopUpdates();
+      queryPedometerData(startDate, now).then(setData);
     } else {
-      startUpdates(new Date(), (newError, newData) => {
+      setStartDate(now);
+      startUpdates(now, (newError, newData) => {
         setError(newError);
         setData(newData);
       });

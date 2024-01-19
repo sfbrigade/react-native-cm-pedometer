@@ -6,6 +6,31 @@ enum CmPedometerEvent: String, CaseIterable {
     case onPedometerEvent
 }
 
+extension CMPedometerData {
+    func toPayload() -> [String: Any] {
+        return [
+            "startDate": CmPedometer.dateFormatter.string(from: startDate),
+            "endDate": CmPedometer.dateFormatter.string(from: endDate),
+            "numberOfSteps": numberOfSteps,
+            "distance": distance as Any,
+            "averageActivePace": averageActivePace as Any,
+            "currentPace": currentPace as Any,
+            "currentCadence": currentCadence as Any,
+            "floorsAscended": floorsAscended as Any,
+            "floorsDescended": floorsDescended as Any,
+        ]
+    }
+}
+
+extension CMPedometerEvent {
+    func toPayload() -> [String: Any] {
+        return [
+            "date": CmPedometer.dateFormatter.string(from: date),
+            "type": type.rawValue
+        ]
+    }
+}
+
 @objc(CmPedometer)
 class CmPedometer: RCTEventEmitter {
     static let instance = CMPedometer()
@@ -65,17 +90,7 @@ class CmPedometer: RCTEventEmitter {
                 var body: [String: Any] = [:]
                 body["error"] = error?.localizedDescription
                 if let data = data {
-                    body["data"] = [
-                        "startDate": CmPedometer.dateFormatter.string(from: data.startDate),
-                        "endDate": CmPedometer.dateFormatter.string(from: data.endDate),
-                        "numberOfSteps": data.numberOfSteps,
-                        "distance": data.distance as Any,
-                        "averageActivePace": data.averageActivePace as Any,
-                        "currentPace": data.currentPace as Any,
-                        "currentCadence": data.currentCadence as Any,
-                        "floorsAscended": data.floorsAscended as Any,
-                        "floorsDescended": data.floorsDescended as Any,
-                    ]
+                    body["data"] = data.toPayload()
                 }
                 self.sendEvent(withName: CmPedometerEvent.onPedometerData.rawValue, body: body)
             }
@@ -94,10 +109,7 @@ class CmPedometer: RCTEventEmitter {
             var body: [String: Any] = [:]
             body["error"] = error?.localizedDescription
             if let pedometerEvent = pedometerEvent {
-                body["pedometerEvent"] = [
-                    "date": CmPedometer.dateFormatter.string(from: pedometerEvent.date),
-                    "type": pedometerEvent.type.rawValue
-                ]
+                body["pedometerEvent"] = pedometerEvent.toPayload()
             }
             self.sendEvent(withName: CmPedometerEvent.onPedometerEvent.rawValue, body: body)
         })
@@ -109,6 +121,24 @@ class CmPedometer: RCTEventEmitter {
     }
 
     // MARK: - Fetching Historical Pedometer Data
+
+    @objc(queryPedometerData:to:withCallback:)
+    func queryPedometerData(from: String, to: String, callback: @escaping RCTResponseSenderBlock) {
+        if let from = CmPedometer.dateFormatter.date(from: from),
+           let to = CmPedometer.dateFormatter.date(from: to) {
+            CmPedometer.instance.queryPedometerData(from: from, to: to) { (data, error) in
+                if let error = error {
+                    callback([error.localizedDescription])
+                } else if let data = data {
+                    callback([NSNull(), data.toPayload()])
+                } else {
+                    callback(["An unexpected error has occurred."])
+                }
+            }
+        } else {
+            callback(["Invalid dates"])
+        }
+    }
 
     // MARK: -
 
