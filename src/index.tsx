@@ -17,6 +17,37 @@ const CmPedometer = NativeModules.CmPedometer
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return CmPedometer.multiply(a, b);
+export enum CMAuthorizationStatus {
+  notDetermined,
+  restricted,
+  denied,
+  authorized,
+}
+
+export function authorizationStatus(): Promise<CMAuthorizationStatus> {
+  return CmPedometer.authorizationStatus();
+}
+
+export function isStepCountingAvailable(): Promise<boolean> {
+  return CmPedometer.isStepCountingAvailable();
+}
+
+export function isDistanceAvailable(): Promise<boolean> {
+  return CmPedometer.isDistanceAvailable();
+}
+
+export function isFloorCountingAvailable(): Promise<boolean> {
+  return CmPedometer.isFloorCountingAvailable();
+}
+
+export function isPaceAvailable(): Promise<boolean> {
+  return CmPedometer.isPaceAvailable();
+}
+
+export function isCadenceAvailable(): Promise<boolean> {
+  return CmPedometer.isCadenceAvailable();
+}
+
+export function isPedometerEventTrackingAvailable(): Promise<boolean> {
+  return CmPedometer.isPedometerEventTrackingAvailable();
 }
