@@ -10,9 +10,13 @@ import {
   isPaceAvailable,
   isCadenceAvailable,
   isPedometerEventTrackingAvailable,
-  CMPedometerData,
+  type CMPedometerData,
   startUpdates,
   stopUpdates,
+  type CMPedometerEvent,
+  CMPedometerEventType,
+  startEventUpdates,
+  stopEventUpdates,
 } from 'react-native-cm-pedometer';
 
 export default function App() {
@@ -41,9 +45,11 @@ export default function App() {
     };
   }, []);
 
+  const [error, setError] = React.useState<Error | undefined>();
+
   const [isDataStarted, setDataStarted] = React.useState<boolean>(false);
   const [data, setData] = React.useState<CMPedometerData | undefined>();
-  const [error, setError] = React.useState<Error | undefined>();
+
   function onPressData() {
     if (isDataStarted) {
       stopUpdates();
@@ -54,6 +60,21 @@ export default function App() {
       });
     }
     setDataStarted(!isDataStarted);
+  }
+
+  const [isEventStarted, setEventStarted] = React.useState<boolean>(false);
+  const [event, setEvent] = React.useState<CMPedometerEvent | undefined>();
+
+  function onPressEvent() {
+    if (isEventStarted) {
+      stopEventUpdates();
+    } else {
+      startEventUpdates((newError, newEvent) => {
+        setError(newError);
+        setEvent(newEvent);
+      });
+    }
+    setEventStarted(!isEventStarted);
   }
 
   return (
@@ -70,6 +91,7 @@ export default function App() {
       <Text>
         Is Pedometer Event Tracking Available: {isEventAvail?.toString()}
       </Text>
+      <Text>Error: {error?.message}</Text>
       <Button
         onPress={onPressData}
         title={isDataStarted ? 'Stop Data Updates' : 'Start Data Updates'}
@@ -83,7 +105,15 @@ export default function App() {
       <Text>Average Active Pace: {data?.averageActivePace}</Text>
       <Text>Floors Ascended: {data?.floorsAscended}</Text>
       <Text>Floors Descended: {data?.floorsDescended}</Text>
-      <Text>Error: {error?.message}</Text>
+      <Button
+        onPress={onPressEvent}
+        title={isEventStarted ? 'Stop Event Updates' : 'Start Event Updates'}
+      />
+      <Text>Event date: {event?.date.toLocaleString()}</Text>
+      <Text>
+        Event type:{' '}
+        {event?.type !== undefined && CMPedometerEventType[event.type]}
+      </Text>
     </View>
   );
 }

@@ -32,6 +32,10 @@ RCT_EXTERN_METHOD(startUpdates:(NSString *)from)
 
 RCT_EXTERN_METHOD(stopUpdates)
 
+RCT_EXTERN_METHOD(startEventUpdates)
+
+RCT_EXTERN_METHOD(stopEventUpdates)
+
 // MARK: - Fetching Historical Pedometer Data
 
 // MARK: -

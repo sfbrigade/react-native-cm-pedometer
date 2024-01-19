@@ -87,6 +87,27 @@ class CmPedometer: RCTEventEmitter {
         CmPedometer.instance.stopUpdates()
     }
 
+    @objc(startEventUpdates)
+    func startEventUpdates() -> Void {
+        CmPedometer.instance.startEventUpdates(handler: { [weak self] (pedometerEvent, error) in
+            guard let self = self else { return }
+            var body: [String: Any] = [:]
+            body["error"] = error?.localizedDescription
+            if let pedometerEvent = pedometerEvent {
+                body["pedometerEvent"] = [
+                    "date": CmPedometer.dateFormatter.string(from: pedometerEvent.date),
+                    "type": pedometerEvent.type.rawValue
+                ]
+            }
+            self.sendEvent(withName: CmPedometerEvent.onPedometerEvent.rawValue, body: body)
+        })
+    }
+
+    @objc(stopEventUpdates)
+    func stopEventUpdates() -> Void {
+        CmPedometer.instance.stopEventUpdates()
+    }
+
     // MARK: - Fetching Historical Pedometer Data
 
     // MARK: -

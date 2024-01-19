@@ -68,11 +68,20 @@ export interface CMPedometerData {
   floorsDescended: number | undefined | null;
 }
 
+export enum CMPedometerEventType {
+  pause,
+  resume,
+}
+
+export interface CMPedometerEvent {
+  date: Date;
+  type: CMPedometerEventType;
+}
+
 const enum CmPedometerEvent {
   onPedometerData = 'onPedometerData',
   onPedometerEvent = 'onPedometerEvent',
 }
-
 const eventEmitter = new NativeEventEmitter(CmPedometer);
 
 export function startUpdates(
@@ -103,6 +112,31 @@ export function startUpdates(
 export function stopUpdates(): void {
   eventEmitter.removeAllListeners(CmPedometerEvent.onPedometerData);
   CmPedometer.stopUpdates();
+}
+
+export function startEventUpdates(
+  handler: (error: Error | undefined, pedometerEvent: CMPedometerEvent) => void
+): void {
+  eventEmitter.addListener(CmPedometerEvent.onPedometerEvent, (event: any) => {
+    let error: Error | undefined;
+    if (event.error) {
+      error = new Error(event.error);
+    }
+    let pedometerEvent: CMPedometerEvent | undefined;
+    if (event.pedometerEvent) {
+      pedometerEvent = {
+        ...event.pedometerEvent,
+        date: new Date(event.pedometerEvent.date),
+      } as CMPedometerEvent;
+      handler(error, pedometerEvent);
+    }
+  });
+  CmPedometer.startEventUpdates();
+}
+
+export function stopEventUpdates(): void {
+  eventEmitter.removeAllListeners(CmPedometerEvent.onPedometerEvent);
+  CmPedometer.stopEventUpdates();
 }
 
 // Fetching Historical Pedometer Data
