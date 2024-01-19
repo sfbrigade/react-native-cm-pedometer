@@ -1,6 +1,9 @@
 #import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 
-@interface RCT_EXTERN_MODULE(CmPedometer, NSObject)
+@interface RCT_EXTERN_MODULE(CmPedometer, RCTEventEmitter)
+
+// MARK: - Determining Pedometer Availability
 
 RCT_EXTERN_METHOD(authorizationStatus:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject)
@@ -23,9 +26,19 @@ RCT_EXTERN_METHOD(isCadenceAvailable:(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(isPedometerEventTrackingAvailable:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject)
 
+// MARK: - Gathering Live Pedometer Data
+
+RCT_EXTERN_METHOD(startUpdates:(NSString *)from)
+
+RCT_EXTERN_METHOD(stopUpdates)
+
+// MARK: - Fetching Historical Pedometer Data
+
+// MARK: -
+
 + (BOOL)requiresMainQueueSetup
 {
-  return NO;
+    return NO;
 }
 
 @end

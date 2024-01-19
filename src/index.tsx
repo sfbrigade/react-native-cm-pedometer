@@ -1,4 +1,4 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 
 const LINKING_ERROR =
   `The package 'react-native-cm-pedometer' doesn't seem to be linked. Make sure: \n\n` +
@@ -16,6 +16,8 @@ const CmPedometer = NativeModules.CmPedometer
         },
       }
     );
+
+// Determining Pedometer Availability
 
 export enum CMAuthorizationStatus {
   notDetermined,
@@ -51,3 +53,56 @@ export function isCadenceAvailable(): Promise<boolean> {
 export function isPedometerEventTrackingAvailable(): Promise<boolean> {
   return CmPedometer.isPedometerEventTrackingAvailable();
 }
+
+// Getting Live Pedometer Data
+
+export interface CMPedometerData {
+  startDate: Date;
+  endDate: Date;
+  numberOfSteps: number;
+  distance: number | undefined | null;
+  averageActivePace: number | undefined | null;
+  currentPace: number | undefined | null;
+  currentCadence: number | undefined | null;
+  floorsAscended: number | undefined | null;
+  floorsDescended: number | undefined | null;
+}
+
+const enum CmPedometerEvent {
+  onPedometerData = 'onPedometerData',
+  onPedometerEvent = 'onPedometerEvent',
+}
+
+const eventEmitter = new NativeEventEmitter(CmPedometer);
+
+export function startUpdates(
+  from: Date,
+  withHandler: (
+    error: Error | undefined,
+    data: CMPedometerData | undefined
+  ) => void
+): void {
+  eventEmitter.addListener(CmPedometerEvent.onPedometerData, (event: any) => {
+    let error: Error | undefined;
+    if (event.error) {
+      error = new Error(event.error);
+    }
+    let data: CMPedometerData | undefined;
+    if (event.data) {
+      data = {
+        ...event.data,
+        startDate: new Date(event.data.startDate),
+        endDate: new Date(event.data.endDate),
+      } as CMPedometerData;
+    }
+    withHandler(error, data);
+  });
+  CmPedometer.startUpdates(from.toISOString());
+}
+
+export function stopUpdates(): void {
+  eventEmitter.removeAllListeners(CmPedometerEvent.onPedometerData);
+  CmPedometer.stopUpdates();
+}
+
+// Fetching Historical Pedometer Data
