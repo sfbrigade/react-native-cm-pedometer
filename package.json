@@ -1,5 +1,5 @@
 {
-  "name": "react-native-cm-pedometer",
+  "name": "@sfcivictech/react-native-cm-pedometer",
   "version": "0.0.0",
   "description": "React Native iOS Core Motion CMPedometer",
   "main": "lib/commonjs/index",
